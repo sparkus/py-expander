@@ -20,7 +20,7 @@ import config
 
 logging.basicConfig(filename=config.LOGFILE, filemode='ab', level=logging.DEBUG)
 
-VIDEO_EXTENSIONS = ['.mkv', '.avi', '.mov', 'mp4']
+VIDEO_EXTENSIONS = ['.mkv', '.avi', '.mov', '.mp4']
 MUSIC_EXTENSIONS = ['.flac', '.mp3', '.ogg', '.wav']
 SOFTWARE_EXTENSIONS = ['.iso', '.exe']
 ARCHIVE_EXTENSIONS = ['.rar', '.zip', '.7z']
