@@ -1,10 +1,9 @@
-#!/var/packages/python/target/bin/python
+#!/usr/bin/python
 
 """
-Created on Jan 26, 2013
+@author: sparkus
 
-@author: Omer
-
+File is taken from py-expander https://github.com/omerbenamram/py-expander
 """
 
 import os
@@ -14,12 +13,17 @@ import subprocess
 import logging
 import re
 import itertools
-
+import sys
 import config
 
 
-logging.basicConfig(filename=config.LOGFILE, filemode='ab', level=logging.DEBUG)
-
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+handler = logging.FileHandler("logPyExpander.log")
+handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 VIDEO_EXTENSIONS = ['.mkv', '.avi', '.mov', '.mp4']
 MUSIC_EXTENSIONS = ['.flac', '.mp3', '.ogg', '.wav']
 SOFTWARE_EXTENSIONS = ['.iso', '.exe']
@@ -41,7 +45,7 @@ def _find_target_archives(directory):
         for f in filenames:
             candidate_extension = os.path.splitext(f)[1]
             if candidate_extension in ARCHIVE_EXTENSIONS:
-                logging.debug('Found archive %s in %s' % (os.path.join(dirpath, f), directory))
+                logger.debug('Found archive %s in %s' % (os.path.join(dirpath, f), directory))
                 archives_list.append(os.path.join(dirpath, f))
 
     #Deals with redundant part01.rar part02.rar etc..
@@ -56,7 +60,7 @@ def _find_target_archives(directory):
         if int(match.group('part_num')) == 1:
             return True
 
-        logging.debug('%s is redundant - not extracting' % file_name)
+        logger.debug('%s is redundant - not extracting' % file_name)
         return False
 
     after_parts_filtration = itertools.ifilter(_redundant_parts_filter, archives_list)
@@ -74,7 +78,7 @@ def _extract(archive_path, destination):
     """
     extract_job = subprocess.Popen([config.EXECUTABLE,  # 7Zip Executable
                                     'e',  # extract to current working dir
-                                    '-y',  # assume yes to all (overwrite)
+                                  #  '-y',  # assume yes to all (overwrite)
                                     archive_path],
                                    cwd=destination)              # Change current working directory
     # Since 7Zip only works with e flag..
@@ -92,11 +96,11 @@ def _create_extraction_path(directory_path):
     if not os.path.exists(directory_path):
         try:
             os.makedirs(directory_path)
-            logging.info("Creating directory %s" % directory_path)
+            logger.info("Creating directory %s" % directory_path)
 
         except OSError as e:
             if e.errno != errno.EEXIST:
-                logging.exception("Failed to create directory %s" % directory_path, e)
+                logger.exception("Failed to create directory %s" % directory_path, e)
                 raise
             pass
 
@@ -123,14 +127,14 @@ def extract_all(folder):
             os.mkdir(current_dir)
 
             for target_archive in archives_to_extract:
-                logging.info("Extracting %s to %s" % (target_archive, current_dir))
+                logger.info("Extracting %s to %s" % (target_archive, current_dir))
                 _extract(target_archive, current_dir)
 
             iteration += 1
             archives_to_extract = _find_target_archives(current_dir)
 
     else:
-        logging.info("Found no archives in %s !" % current_dir)
+        logger.info("Found no archives in %s !" % current_dir)
 
 
 def _handle_directory(directory, handler, torrent_name):
@@ -146,14 +150,14 @@ def _handle_directory(directory, handler, torrent_name):
     :param torrent_name:
     """
     for directory_path, subdirectories, filenames in os.walk(directory):
-        logging.info("Processing Directory %s" % directory_path)
+        logger.info("Processing Directory %s" % directory_path)
         for filename in filenames:
             category_path, file_category = get_categorized_path(filename)
 
             if category_path is not None:
 
                 original_path = os.path.join(directory_path, filename)
-                logging.info("Found %s file %s" % (file_category, original_path))
+                logger.info("Found %s file %s" % (file_category, original_path))
 
                 destination_dir = os.path.join(category_path, torrent_name)
                 _create_extraction_path(destination_dir)  # Creates target directory (of category path)
@@ -162,10 +166,10 @@ def _handle_directory(directory, handler, torrent_name):
                 try:
                     # Move\Copy all relevant files to their location (keep original files for uploading)
                     handler(original_path, destination_path)
-                    logging.info('%s %s to %s' % (handler.__name__, original_path, destination_path))
+                    logger.info('%s %s to %s' % (handler.__name__, original_path, destination_path))
 
                 except OSError as e:
-                    logging.exception("Failed to %s %s : %s" % (handler.__name__, original_path, e))
+                    logger.exception("Failed to %s %s : %s" % (handler.__name__, original_path, e))
 
 
 def _choose_handler(folder, torrent_name):
@@ -178,10 +182,12 @@ def _choose_handler(folder, torrent_name):
     # If folder has extracted rars...
     listdir = os.listdir(folder)
     if config.EXTRACTION_TEMP_DIR_NAME in listdir:
+        logger.debug("Found Extraction Temp in _choose_handler")
         _handle_directory(os.path.join(folder, config.EXTRACTION_TEMP_DIR_NAME), shutil.move, torrent_name)
 
     # If folder has content only
     else:
+        logger.debug("Content only in _choose_handler")
         _handle_directory(folder, shutil.copy, torrent_name)
 
 
@@ -191,16 +197,16 @@ def _cleanup_temp(folder):
 
     :param folder:
     """
-    logging.info('Cleaning up...')
+    logger.info('Cleaning up...')
 
     listdir = os.listdir(folder)
 
     if config.EXTRACTION_TEMP_DIR_NAME in listdir:
         try:
-            logging.info('Going to delete %s' % (os.path.join(folder, config.EXTRACTION_TEMP_DIR_NAME)))
+            logger.info('Going to delete %s' % (os.path.join(folder, config.EXTRACTION_TEMP_DIR_NAME)))
             shutil.rmtree(os.path.join(folder, config.EXTRACTION_TEMP_DIR_NAME))
         except OSError:
-            logging.exception("Failed to delete directory %s ! " %
+            logger.exception("Failed to delete directory %s ! " %
                               (os.path.join(folder, config.EXTRACTION_TEMP_DIR_NAME)))
 
 
@@ -224,18 +230,25 @@ def _get_content_type(filename):
     base_filename = os.path.basename(filename)
     base_filename.lower()
     extension = os.path.splitext(base_filename)[1]
+    logger.debug("_get_content_type is searching for content match for " + str(filename))
     if extension in VIDEO_EXTENSIONS:
         if base_filename.find('sample') != -1:
+            logger.debug("Found content sample")
             return "vid-sample"
         if _is_tv_show(base_filename):
+            logger.debug("Found TV")
             return 'tv'
         else:
+            logger.debug("Found Movie")
             return 'movie'
     if extension in MUSIC_EXTENSIONS:
+        logger.debug("Found music")
         return 'music'
     if extension in SOFTWARE_EXTENSIONS:
+        logger.debug("Found software")
         return 'app'
     else:
+        logger.debug("No match in _get_content_type")
         return None
 
 
@@ -252,7 +265,7 @@ def get_categorized_path(filename):
     # If file is not recognized by any of the categories/checks - there would be no entry at the
     # config file
     except KeyError:
-        logging.debug("%s is not in any relevant category, ignoring" % filename)
+        logger.debug("%s is not in any relevant category, ignoring" % filename)
         return None
 
 
@@ -261,21 +274,22 @@ def main():
     This main function is designed to be called by transmission.
 
     """
-    try:
-        logging.info('Initializing')
 
-        #Get environmental values from transmission
-        #Path should be $TR_TORRENT_DIR/$TR_TORRENT_NAME
+    logger.info('Initializing')
 
-        TORRENT_DIR, TORRENT_NAME = config.get_environmental_variables_from_transmission()
-
-        extract_all(TORRENT_DIR)
-        _choose_handler(TORRENT_DIR, TORRENT_NAME)
-        _cleanup_temp(TORRENT_DIR)
-        logging.info('Done!')
-    except:
-        logging.exception("Critical exception occurred: ")
-        raise
+    #Get environmental values from transmission
+    #Path should be $TR_TORRENT_DIR/$TR_TORRENT_NAME
+    TORRENT_DIR = os.environ.get('TR_TORRENT_DIR', None)
+    TORRENT_NAME = os.environ.get('TR_TORRENT_NAME', None)
+    TORRENT_DIR = os.path.realpath(os.path.join(TORRENT_DIR, TORRENT_NAME))
+    #TORRENT_DIR, TORRENT_NAME = config.get_environmental_variables_from_transmission()
+    logger.info('Torrent_dir: '+ str(TORRENT_DIR))
+    logger.info('Torrent Name: ' + str(TORRENT_NAME))
+    extract_all(TORRENT_DIR)
+    _choose_handler(TORRENT_DIR, TORRENT_NAME)
+    _cleanup_temp(TORRENT_DIR)
+    logger.info('Done!')
+    
 
 
 if __name__ == "__main__":
