@@ -11,6 +11,7 @@ import errno
 import shutil
 import subprocess
 import logging
+import logging.handlers
 import re
 import itertools
 import sys
@@ -19,7 +20,7 @@ import config
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler("logPyExpander.log")
+handler = logging.handlers.RotatingFileHandler("logPyExpander.log", mode='a', maxBytes=20000, backupCount=3)
 handler.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
@@ -276,19 +277,22 @@ def main():
     """
 
     logger.info('Initializing')
-
-    #Get environmental values from transmission
-    #Path should be $TR_TORRENT_DIR/$TR_TORRENT_NAME
-    TORRENT_DIR = os.environ.get('TR_TORRENT_DIR', None)
-    TORRENT_NAME = os.environ.get('TR_TORRENT_NAME', None)
-    TORRENT_DIR = os.path.realpath(os.path.join(TORRENT_DIR, TORRENT_NAME))
-    #TORRENT_DIR, TORRENT_NAME = config.get_environmental_variables_from_transmission()
-    logger.info('Torrent_dir: '+ str(TORRENT_DIR))
-    logger.info('Torrent Name: ' + str(TORRENT_NAME))
-    extract_all(TORRENT_DIR)
-    _choose_handler(TORRENT_DIR, TORRENT_NAME)
-    _cleanup_temp(TORRENT_DIR)
-    logger.info('Done!')
+    if len(sys.argv) == 4:
+        if sys.argv[1] == '-t':
+            logger.debug("Test mode detected")
+    else:
+        #Get environmental values from transmission
+        #Path should be $TR_TORRENT_DIR/$TR_TORRENT_NAME
+        TORRENT_DIR = os.environ.get('TR_TORRENT_DIR', None)
+        TORRENT_NAME = os.environ.get('TR_TORRENT_NAME', None)
+        TORRENT_DIR = os.path.realpath(os.path.join(TORRENT_DIR, TORRENT_NAME))
+        #TORRENT_DIR, TORRENT_NAME = config.get_environmental_variables_from_transmission()
+        logger.info('Torrent_dir: '+ str(TORRENT_DIR))
+        logger.info('Torrent Name: ' + str(TORRENT_NAME))
+        extract_all(TORRENT_DIR)
+        _choose_handler(TORRENT_DIR, TORRENT_NAME)
+        _cleanup_temp(TORRENT_DIR)
+        logger.info('Done!')
     
 
 
