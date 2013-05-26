@@ -2,8 +2,7 @@ py-expander
 ===========
 
 A python script designed to post-process Transmission torrents.
-
-Currently it supports 7-Zip only. So get it if you dont have it!
+Particularily if you had a seedbox like server sitting out in serverland.
 
 The script extracts files recursively (if extract is necessary..) 
 and the moves the files to pre-configured folders based on their type!
@@ -13,5 +12,6 @@ The script relies on scene torrent naming standards (such as SxxExx TV shows num
 
 In any case - original torrent files are conserved for upload.
 
-I recommend using this script with couchpotato/sickbeard/headphones since they 
-provide additional awesome post-processing features!
+This script was originally forked from py-expander, and was modified to work on linux.
+https://github.com/omerbenamram/py-expander
+NOT Tested on Windows!

@@ -29,9 +29,18 @@ TV_RE = re.compile("S\d{2}E\d{2}", re.IGNORECASE)
 class torrentHandler:
     def __init__(self, torrentDirectory, torrentName, testMode=False):
         self.testMode = testMode
-        self.torrentDirectory = torrentDirectory
+        if os.path.isdir(os.path.realpath(os.path.join(torrentDirectory, torrentName))):
+            self.torrentDirectory = os.path.realpath(os.path.join(torrentDirectory, torrentName))
+            self.singleFileTorrent = False
+        else:
+            self.singleFileTorrent = True
+            self.singleFileTorrentLocation = os.path.realpath(os.path.join(torrentDirectory, torrentName))
+            self.torrentDirectory = torrentDirectory
         self.torrentName = torrentName
         self.logger = logging.getLogger("torHandler")
+        self.extract_all()
+        self._choose_handler()
+        self._cleanup_temp()
     def _find_target_archives(self,directory):
         """
         Look for archives in sourcedir + subdirectories.
@@ -162,50 +171,52 @@ class torrentHandler:
         :param handler:
         :param torrent_name:
         """
-        if os.path.isfile(directory):
-            category_path, file_category = get_categorized_path(filename)
+        if self.singleFileTorrent:
+            category_path, file_category = self.get_categorized_path(self.singleFileTorrentLocation)
             if category_path is not None:
-                original_path = os.path.join(directory_path, filename)
-                self.logger.info("Found %s file %s" % (file_category, original_path))
+                self.logger.info("Found %s file %s" % (file_category, self.singleFileTorrentLocation))
                 destination_dir = os.path.join(category_path, torrent_name)
-                _create_extraction_path(destination_dir)
+                self._create_extraction_path(destination_dir)
+                destination_path = os.path.join(destination_dir, torrent_name)
                 try:
                     # Move\Copy all relevant files to their location (keep original files for uploading)
                     if self.testMode == False:
-                        handler(original_path, destination_path)
+                        handler(self.singleFileTorrentLocation, destination_path)
+                        self.logger.info('%s %s to %s' % (handler.__name__, self.singleFileTorrentLocation, destination_path))
                     else:
-                        self.logger.debug("Would have run " + str(handler) + " on " + str(original_path) + " to " + str(destination_path))
+                        self.logger.debug("Would have run " + str(handler.__name__) + " on " + str(self.singleFileTorrentLocation) + " to " + str(destination_path))
                     
-                    self.logger.info('%s %s to %s' % (handler.__name__, original_path, destination_path))
+                    
 
                 except OSError as e:
                     self.logger.exception("Failed to %s %s : %s" % (handler.__name__, original_path, e))
-        for directory_path, subdirectories, filenames in os.walk(directory):
-            self.logger.info("Processing Directory %s" % directory_path)
-            for filename in filenames:
-                category_path, file_category = self.get_categorized_path(filename)
+        else:
+            for directory_path, subdirectories, filenames in os.walk(directory):
+                self.logger.info("Processing Directory %s" % directory_path)
+                for filename in filenames:
+                    category_path, file_category = self.get_categorized_path(filename)
 
-                if category_path is not None:
+                    if category_path is not None:
 
-                    original_path = os.path.join(directory_path, filename)
-                    self.logger.info("Found %s file %s" % (file_category, original_path))
+                        original_path = os.path.join(directory_path, filename)
+                        self.logger.info("Found %s file %s" % (file_category, original_path))
 
-                    destination_dir = os.path.join(category_path, torrent_name)
-                    self._create_extraction_path(destination_dir)  # Creates target directory (of category path)
-                    destination_path = os.path.join(destination_dir, filename)
+                        destination_dir = os.path.join(category_path, torrent_name)
+                        self._create_extraction_path(destination_dir)  # Creates target directory (of category path)
+                        destination_path = os.path.join(destination_dir, filename)
 
-                    try:
-                        # Move\Copy all relevant files to their location (keep original files for uploading)
-                        if self.testMode == False:
-                            handler(original_path, destination_path)
-                            self.logger.info('%s %s to %s' % (handler.__name__, original_path, destination_path))
-                        else:
-                            self.logger.debug("Would have run " + str(handler.__name__) + " on " + str(original_path) + " to " + str(destination_path))
-                        
-                        
+                        try:
+                            # Move\Copy all relevant files to their location (keep original files for uploading)
+                            if self.testMode == False:
+                                handler(original_path, destination_path)
+                                self.logger.info('%s %s to %s' % (handler.__name__, original_path, destination_path))
+                            else:
+                                self.logger.debug("Would have run " + str(handler.__name__) + " on " + str(original_path) + " to " + str(destination_path))
+                            
+                            
 
-                    except OSError as e:
-                        self.logger.exception("Failed to %s %s : %s" % (handler.__name__, original_path, e))
+                        except OSError as e:
+                            self.logger.exception("Failed to %s %s : %s" % (handler.__name__, original_path, e))
 
 
     def _choose_handler(self):
@@ -216,7 +227,7 @@ class torrentHandler:
         """
 
         # If folder has extracted rars...
-        if os.path.isdir(self.torrentDirectory):
+        if not self.singleFileTorrent:
             listdir = os.listdir(self.torrentDirectory)
             if config.EXTRACTION_TEMP_DIR_NAME in listdir:
                 self.logger.debug("Found Extraction Temp in _choose_handler, moving extracted file(s)")
@@ -304,7 +315,8 @@ class torrentHandler:
         :rtype : tuple or None
         """
         try:
-            return config.CATEGORY_PATH[self._get_content_type(filename)], self._get_content_type(filename)
+            contentType=self._get_content_type(filename)
+            return config.CATEGORY_PATH[contentType], contentType
 
         # If file is not recognized by any of the categories/checks - there would be no entry at the
         # config file
@@ -357,14 +369,13 @@ def main():
         TORRENT_NAME = os.environ.get('TR_TORRENT_NAME', None)
         logger.info('Torrent_Dir: '+ str(TORRENT_DIR))
         logger.info('Torrent Name: ' + str(TORRENT_NAME))
+    #TORRENT_DIR = os.path.realpath(os.path.join(TORRENT_DIR, TORRENT_NAME))
     torHandler = torrentHandler(TORRENT_DIR, TORRENT_NAME, testMode=testArg)
-    TORRENT_DIR = os.path.realpath(os.path.join(TORRENT_DIR, TORRENT_NAME))
+    
     #TORRENT_DIR, TORRENT_NAME = config.get_environmental_variables_from_transmission()
 
 
-    torHandler.extract_all()
-    torHandler._choose_handler()
-    torHandler._cleanup_temp()
+
 
     if testArg:
         shutil.rmtree(testDir1)
