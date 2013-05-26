@@ -100,13 +100,13 @@ class torrentHandler:
             try:
                 if self.testMode == False:
                     os.makedirs(directory_path)
-                    logger.info("Creating directory %s" % directory_path)
+                    self.logger.info("Creating directory %s" % directory_path)
                 else:
-                    logger.debug("Would have created " + directory_path)
+                    self.logger.debug("Would have created " + directory_path)
 
             except OSError as e:
                 if e.errno != errno.EEXIST:
-                    logger.exception("Failed to create directory %s" % directory_path, e)
+                    self.logger.exception("Failed to create directory %s" % directory_path, e)
                     raise
                 pass
 
@@ -162,7 +162,7 @@ class torrentHandler:
         :param handler:
         :param torrent_name:
         """
-        if os.path.isFile(directory):
+        if os.path.isfile(directory):
             category_path, file_category = get_categorized_path(filename)
             if category_path is not None:
                 original_path = os.path.join(directory_path, filename)
@@ -183,7 +183,7 @@ class torrentHandler:
         for directory_path, subdirectories, filenames in os.walk(directory):
             self.logger.info("Processing Directory %s" % directory_path)
             for filename in filenames:
-                category_path, file_category = get_categorized_path(filename)
+                category_path, file_category = self.get_categorized_path(filename)
 
                 if category_path is not None:
 
@@ -191,17 +191,18 @@ class torrentHandler:
                     self.logger.info("Found %s file %s" % (file_category, original_path))
 
                     destination_dir = os.path.join(category_path, torrent_name)
-                    _create_extraction_path(destination_dir)  # Creates target directory (of category path)
+                    self._create_extraction_path(destination_dir)  # Creates target directory (of category path)
                     destination_path = os.path.join(destination_dir, filename)
 
                     try:
                         # Move\Copy all relevant files to their location (keep original files for uploading)
                         if self.testMode == False:
                             handler(original_path, destination_path)
+                            self.logger.info('%s %s to %s' % (handler.__name__, original_path, destination_path))
                         else:
-                            self.logger.debug("Would have run " + str(handler) + " on " + str(original_path) + " to " + str(destination_path))
+                            self.logger.debug("Would have run " + str(handler.__name__) + " on " + str(original_path) + " to " + str(destination_path))
                         
-                        self.logger.info('%s %s to %s' % (handler.__name__, original_path, destination_path))
+                        
 
                     except OSError as e:
                         self.logger.exception("Failed to %s %s : %s" % (handler.__name__, original_path, e))
@@ -218,16 +219,16 @@ class torrentHandler:
         if os.path.isdir(self.torrentDirectory):
             listdir = os.listdir(self.torrentDirectory)
             if config.EXTRACTION_TEMP_DIR_NAME in listdir:
-                self.logger.debug("Found Extraction Temp in _choose_handler")
-                _handle_directory(os.path.join(self.torrentDirectory, config.EXTRACTION_TEMP_DIR_NAME), shutil.move, self.torrentName)
+                self.logger.debug("Found Extraction Temp in _choose_handler, moving extracted file(s)")
+                self._handle_directory(os.path.join(self.torrentDirectory, config.EXTRACTION_TEMP_DIR_NAME), shutil.move, self.torrentName)
 
             # If folder has content only
             else:
-                self.logger.debug("Content only in _choose_handler")
-                _handle_directory(self.torrentDirectory, shutil.copy, self.torrentName)
+                self.logger.debug("Content only in _choose_handler, selected copy")
+                self._handle_directory(self.torrentDirectory, shutil.copy, self.torrentName)
         else:
-            self.logger.debug("File only in _choose_handler")
-            _handle_directory(self.torrentDirectory, shutil.copy, self.torrentName)
+            self.logger.debug("File only in _choose_handler, selected copy")
+            self._handle_directory(self.torrentDirectory, shutil.copy, self.torrentName)
 
 
     def _cleanup_temp(self):
@@ -263,14 +264,14 @@ class torrentHandler:
         return False
 
 
-    def _get_content_type(self):
+    def _get_content_type(self, filename):
         """
         returns 'tv', 'movie', 'music', 'app' for respective filetypes
         :rtype : str
         :param filename:
         "filename.ext"
         """
-        base_filename = os.path.basename(self.torrentName)
+        base_filename = os.path.basename(filename)
         base_filename.lower()
         extension = os.path.splitext(base_filename)[1]
         self.logger.debug("_get_content_type is searching for content match for " + str(filename))
@@ -278,7 +279,7 @@ class torrentHandler:
             if base_filename.find('sample') != -1:
                 self.logger.debug("Found content sample")
                 return "vid-sample"
-            if _is_tv_show(base_filename):
+            if self._is_tv_show(base_filename):
                 self.logger.debug("Found TV")
                 return 'tv'
             else:
@@ -295,7 +296,7 @@ class torrentHandler:
             return None
 
 
-    def get_categorized_path(self):
+    def get_categorized_path(self, filename):
         """
         returns destination path for extractions according to the category to which the file belongs
         :param filename:
@@ -303,7 +304,7 @@ class torrentHandler:
         :rtype : tuple or None
         """
         try:
-            return config.CATEGORY_PATH[_get_content_type(self.torrentDirectory)], _get_content_type(self.torrentDirectory)
+            return config.CATEGORY_PATH[self._get_content_type(filename)], self._get_content_type(filename)
 
         # If file is not recognized by any of the categories/checks - there would be no entry at the
         # config file
