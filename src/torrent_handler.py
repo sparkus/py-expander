@@ -143,7 +143,7 @@ class torrentHandler:
             if self.testMode == False:
                 os.mkdir(extracted_root)
             else:
-                self.logger.debug("Would have created " + extracted_root)
+                self.logger.debug("Would have created temp extraction: " + extracted_root)
                 
 
             while len(archives_to_extract) > 0:
@@ -151,7 +151,7 @@ class torrentHandler:
                 if self.testMode == False:
                     os.mkdir(current_dir)
                 else:
-                    self.logger.debug("Would have created " + current_dir)
+                    self.logger.debug("Would have created temp extraction: " + current_dir)
 
                 for target_archive in archives_to_extract:
                     self.logger.info("Extracting %s to %s" % (target_archive, current_dir))
@@ -236,6 +236,7 @@ class torrentHandler:
             listdir = os.listdir(self.torrentDirectory)
             if config.EXTRACTION_TEMP_DIR_NAME in listdir:
                 self.logger.debug("Found Extraction Temp in _choose_handler, moving extracted file(s)")
+                #####FAILS HERE in testmode with real RAR's....should I rethink how testmode works with real rar's?
                 self._handle_directory(os.path.join(self.torrentDirectory, config.EXTRACTION_TEMP_DIR_NAME), shutil.move, self.torrentName)
 
             # If folder has content only
