@@ -155,7 +155,7 @@ class torrentHandler:
                     self._extract(target_archive, current_dir)
 
                 iteration += 1
-                archives_to_extract = _find_target_archives(current_dir)
+                archives_to_extract = self._find_target_archives(current_dir)
 
         else:
             self.logger.info("Found no archives in %s !" % current_dir)
