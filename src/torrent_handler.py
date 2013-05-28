@@ -54,9 +54,10 @@ class torrentHandler:
             for f in filenames:
                 candidate_extension = os.path.splitext(f)[1]
                 if candidate_extension in ARCHIVE_EXTENSIONS:
-                    self.logger.debug('Found archive %s in %s' % (os.path.join(dirpath, f), directory))
-                    archives_list.append(os.path.join(dirpath, f))
-
+                    if not ".part" in f:
+                        self.logger.debug('Found archive %s in %s' % (os.path.join(dirpath, f), directory))
+                        archives_list.append(os.path.join(dirpath, f))
+#####TO BE DELETED if the .part change works above #########
         #Deals with redundant part01.rar part02.rar etc..
         def _redundant_parts_filter(file_name, logtemp):
             match = re.search("part(?P<part_num>\d+).rar", file_name, re.IGNORECASE)
@@ -72,10 +73,11 @@ class torrentHandler:
             logtemp.debug('%s is redundant - not extracting' % file_name)
             return False
 
-        after_parts_filtration = itertools.ifilter(_redundant_parts_filter(archives_list, self.logger))
+        #after_parts_filtration = itertools.ifilter(_redundant_parts_filter(archives_list, self.logger))
 
-        return list(after_parts_filtration)
-
+        #return list(after_parts_filtration)
+###### END of DELETE
+        return archives_list
 
     def _extract(self,archive_path, destination):
         """
