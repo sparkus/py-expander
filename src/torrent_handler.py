@@ -358,18 +358,13 @@ def main():
             fileWriter = open(testTorFile1, 'w')
             fileWriter.write('I like to test')
             fileWriter.close()
-            TORRENT_DIR = testTorDirectory1
-            TORRENT_NAME = test1TorrentName
-            logger.info('**TEST** Torrent_Dir: '+ str(TORRENT_DIR))
-            logger.info('**TEST** Torrent Name: ' + str(TORRENT_NAME))
-    else:
-        #Get environmental values from transmission
-        #Path should be $TR_TORRENT_DIR/$TR_TORRENT_NAME
-        TORRENT_DIR = os.environ.get('TR_TORRENT_DIR', None)
-        TORRENT_NAME = os.environ.get('TR_TORRENT_NAME', None)
-        logger.info('Torrent_Dir: '+ str(TORRENT_DIR))
-        logger.info('Torrent Name: ' + str(TORRENT_NAME))
-    #TORRENT_DIR = os.path.realpath(os.path.join(TORRENT_DIR, TORRENT_NAME))
+            os.environ['TR_TORRENT_DIR'] = testTorDirectory1
+            os.environ['TR_TORRENT_NAME'] = test1TorrentName
+    
+    TORRENT_DIR = os.environ.get('TR_TORRENT_DIR', None)
+    TORRENT_NAME = os.environ.get('TR_TORRENT_NAME', None)
+    logger.info('Torrent_Dir: '+ str(TORRENT_DIR))
+    logger.info('Torrent Name: ' + str(TORRENT_NAME))
     torHandler = torrentHandler(TORRENT_DIR, TORRENT_NAME, testMode=testArg)
     
     #TORRENT_DIR, TORRENT_NAME = config.get_environmental_variables_from_transmission()
