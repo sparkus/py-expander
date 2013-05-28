@@ -360,7 +360,13 @@ def main():
             fileWriter.close()
             os.environ['TR_TORRENT_DIR'] = testTorDirectory1
             os.environ['TR_TORRENT_NAME'] = test1TorrentName
-    
+    elif len(sys.argv) == 4:
+        logger.debug("got 4 arguments in the sys.argv: " + str(sys.argv))
+        if sys.argv[1] == '-t':
+            logger.debug("Test mode detected")
+            testArg=True
+            os.environ['TR_TORRENT_DIR'] = sys.argv[2]
+            os.environ['TR_TORRENT_NAME'] = sys.argv[3]
     TORRENT_DIR = os.environ.get('TR_TORRENT_DIR', None)
     TORRENT_NAME = os.environ.get('TR_TORRENT_NAME', None)
     logger.info('Torrent_Dir: '+ str(TORRENT_DIR))
