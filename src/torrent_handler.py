@@ -152,7 +152,7 @@ class torrentHandler:
 
                 for target_archive in archives_to_extract:
                     self.logger.info("Extracting %s to %s" % (target_archive, current_dir))
-                    _extract(target_archive, current_dir)
+                    self._extract(target_archive, current_dir)
 
                 iteration += 1
                 archives_to_extract = _find_target_archives(current_dir)
