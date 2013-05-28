@@ -58,7 +58,7 @@ class torrentHandler:
                     archives_list.append(os.path.join(dirpath, f))
 
         #Deals with redundant part01.rar part02.rar etc..
-        def _redundant_parts_filter(self,file_name):
+        def _redundant_parts_filter(file_name, logtemp):
             match = re.search("part(?P<part_num>\d+).rar", file_name, re.IGNORECASE)
 
             # if parts pattern is not present, leave object unfiltered
@@ -69,10 +69,10 @@ class torrentHandler:
             if int(match.group('part_num')) == 1:
                 return True
 
-            self.logger.debug('%s is redundant - not extracting' % file_name)
+            logtemp.debug('%s is redundant - not extracting' % file_name)
             return False
 
-        after_parts_filtration = itertools.ifilter(_redundant_parts_filter, archives_list)
+        after_parts_filtration = itertools.ifilter(_redundant_parts_filter(archives_list, self.logger))
 
         return list(after_parts_filtration)
 
