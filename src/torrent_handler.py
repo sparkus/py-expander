@@ -28,14 +28,17 @@ TV_RE = re.compile("S\d{2}E\d{2}", re.IGNORECASE)
 
 class torrentHandler:
     def __init__(self, torrentDirectory, torrentName, testMode=False):
+        self.logger = logging.getLogger("torHandler")
         self.testMode = testMode
         if os.path.isdir(os.path.realpath(os.path.join(torrentDirectory, torrentName))):
             self.torrentDirectory = os.path.realpath(os.path.join(torrentDirectory, torrentName))
             self.singleFileTorrent = False
+            self.logger.debug("Torrent Folder Detected in: " + str(self.torrentDirectory))
         else:
             self.singleFileTorrent = True
             self.singleFileTorrentLocation = os.path.realpath(os.path.join(torrentDirectory, torrentName))
             self.torrentDirectory = torrentDirectory
+            self.logger.debug("Single File Torrent Detected in path: " + str(self.torrentDirectory))
         self.torrentName = torrentName
         self.logger = logging.getLogger("torHandler")
         self.extract_all()
