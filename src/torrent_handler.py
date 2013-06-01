@@ -292,7 +292,7 @@ class torrentHandler:
         base_filename = os.path.basename(filename)
         base_filename.lower()
         extension = os.path.splitext(base_filename)[1]
-        self.logger.debug("_get_content_type is searching for content match for " + str(filename))
+        self.logger.debug("_get_content_type is searching for content match for " + str(filename) + " extension " + extension)
         if extension in VIDEO_EXTENSIONS:
             if base_filename.find('sample') != -1:
                 self.logger.debug("Found content sample")
