@@ -198,6 +198,7 @@ class torrentHandler:
         else:
             for directory_path, subdirectories, filenames in os.walk(directory):
                 self.logger.info("Processing Directory %s" % directory_path)
+                self.logger.debug("Handle Directory got Path: " + str(directory_path) + " Subdirectories: " + str(subdirectories) + " Filenames: " + str(filenames))
                 for filename in filenames:
                     category_path, file_category = self.get_categorized_path(filename)
 
@@ -320,6 +321,7 @@ class torrentHandler:
         "filename.ext"
         :rtype : tuple or None
         """
+        self.logger.debug("Getting categorized path for " + filename)
         try:
             contentType=self._get_content_type(filename)
             return config.CATEGORY_PATH[contentType], contentType
