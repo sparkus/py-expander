@@ -371,6 +371,10 @@ def main():
             fileWriter.close()
             os.environ['TR_TORRENT_DIR'] = testTorDirectory1
             os.environ['TR_TORRENT_NAME'] = test1TorrentName
+    elif len(sys.argv) == 3:
+        logger.debug("got 3 arguments in the sys.argv: " + str(sys.argv))
+        os.environ['TR_TORRENT_DIR'] = sys.argv[1]
+        os.environ['TR_TORRENT_NAME'] = sys.argv[2]
     elif len(sys.argv) == 4:
         logger.debug("got 4 arguments in the sys.argv: " + str(sys.argv))
         if sys.argv[1] == '-t':
