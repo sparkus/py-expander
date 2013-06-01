@@ -339,7 +339,10 @@ def main():
     
     logger = logging.getLogger("torHandler")
     logger.setLevel(logging.DEBUG)
-    handler = logging.handlers.RotatingFileHandler(os.path.realpath(os.path.join(os.path.dirname(__file__),"logPyExpander.log")), mode='a', maxBytes=20000, backupCount=3)
+    logFileName= os.path.realpath(os.path.join(os.path.dirname(__file__),"logPyExpander.log"))
+    handler = logging.handlers.RotatingFileHandler(logFileName, mode='a', maxBytes=20000, backupCount=3)
+    st = os.stat(logFileName)
+    os.chmod(logFileName, st.st_mode | stat.S_IWOTH)
     handler.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     handler.setFormatter(formatter)
