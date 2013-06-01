@@ -19,7 +19,7 @@ import config
 
 
 
-VIDEO_EXTENSIONS = ['.mkv', '.avi', '.mov', '.mp4']
+VIDEO_EXTENSIONS = ['.mkv', '.avi', '.mov', '.mp4', '.wmv']
 MUSIC_EXTENSIONS = ['.flac', '.mp3', '.ogg', '.wav']
 SOFTWARE_EXTENSIONS = ['.iso', '.exe']
 ARCHIVE_EXTENSIONS = ['.rar', '.zip', '.7z']
