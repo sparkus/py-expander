@@ -354,7 +354,7 @@ def main():
         if sys.argv[1] == '-t': #testMode
             logger.debug("Test mode detected")
             testArg=True
-            testDir1 = os.path.join(os.getcwd(), 'testDir') #make a subdirectory with the folder testDir that all of the test stuff will be in.
+            testDir1 = os.path.join(os.path.dirname(__file__), 'testDir') #make a subdirectory with the folder testDir that all of the test stuff will be in.
             if (not os.path.isdir(testDir1)): #check for existince, make if missing.
                 os.makedirs(testDir1)
             #First Test
