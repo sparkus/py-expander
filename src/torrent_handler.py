@@ -199,30 +199,31 @@ class torrentHandler:
             for directory_path, subdirectories, filenames in os.walk(directory):
                 self.logger.info("Processing Directory %s" % directory_path)
                 self.logger.debug("Handle Directory got Path: " + str(directory_path) + " Subdirectories: " + str(subdirectories) + " Filenames: " + str(filenames))
-                for filename in filenames:
-                    category_path, file_category = self.get_categorized_path(filename)
+                if len(filenames) > 0:
+                    for filename in filenames:
+                        category_path, file_category = self.get_categorized_path(filename)
 
-                    if category_path is not None:
+                        if category_path is not None:
 
-                        original_path = os.path.join(directory_path, filename)
-                        self.logger.info("Found %s file %s" % (file_category, original_path))
+                            original_path = os.path.join(directory_path, filename)
+                            self.logger.info("Found %s file %s" % (file_category, original_path))
 
-                        destination_dir = os.path.join(category_path, torrent_name)
-                        self._create_extraction_path(destination_dir)  # Creates target directory (of category path)
-                        destination_path = os.path.join(destination_dir, filename)
+                            destination_dir = os.path.join(category_path, torrent_name)
+                            self._create_extraction_path(destination_dir)  # Creates target directory (of category path)
+                            destination_path = os.path.join(destination_dir, filename)
 
-                        try:
-                            # Move\Copy all relevant files to their location (keep original files for uploading)
-                            if self.testMode == False:
-                                handler(original_path, destination_path)
-                                self.logger.info('%s %s to %s' % (handler.__name__, original_path, destination_path))
-                            else:
-                                self.logger.debug("Would have run " + str(handler.__name__) + " on " + str(original_path) + " to " + str(destination_path))
-                            
-                            
+                            try:
+                                # Move\Copy all relevant files to their location (keep original files for uploading)
+                                if self.testMode == False:
+                                    handler(original_path, destination_path)
+                                    self.logger.info('%s %s to %s' % (handler.__name__, original_path, destination_path))
+                                else:
+                                    self.logger.debug("Would have run " + str(handler.__name__) + " on " + str(original_path) + " to " + str(destination_path))
+                                
+                                
 
-                        except OSError as e:
-                            self.logger.exception("Failed to %s %s : %s" % (handler.__name__, original_path, e))
+                            except OSError as e:
+                                self.logger.exception("Failed to %s %s : %s" % (handler.__name__, original_path, e))
 
 
     def _choose_handler(self):
