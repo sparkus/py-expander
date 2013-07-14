@@ -178,7 +178,7 @@ class torrentHandler:
         :param torrent_name:
         """
         if self.singleFileTorrent:
-            self.logger.debug("_handle_directory: Single File Torrent, no directory handling")
+            self.logger.debug("_handle_directory: Single File Torrent, no directory handling for: " + str(self.singleFileTorrentLocation))
             category_path, file_category = self.get_categorized_path(self.singleFileTorrentLocation)
             if category_path is not None:
                 self.logger.info("Found %s file %s" % (file_category, self.singleFileTorrentLocation))
@@ -205,9 +205,7 @@ class torrentHandler:
                     for filename in filenames:
                         self.logger.debug("_handle_directory: trying to get category for: " + filename)
                         category_path, file_category = self.get_categorized_path(filename)
-
                         if category_path is not None:
-
                             original_path = os.path.join(directory_path, filename)
                             self.logger.info("Found %s file %s" % (file_category, original_path))
 
@@ -222,11 +220,10 @@ class torrentHandler:
                                     self.logger.info('%s %s to %s' % (handler.__name__, original_path, destination_path))
                                 else:
                                     self.logger.debug("Would have run " + str(handler.__name__) + " on " + str(original_path) + " to " + str(destination_path))
-                                
-                                
-
                             except OSError as e:
                                 self.logger.exception("Failed to %s %s : %s" % (handler.__name__, original_path, e))
+                        else:
+                            self.logger.debug("_handle_directory: got None in category for:" + filename)
 
 
     def _choose_handler(self):
@@ -279,7 +276,8 @@ class torrentHandler:
     def _is_tv_show(self,filename):
         """
         Takes filename "file.ext"
-        Returns True if file is TV Show based on S01E01 regex
+        TV_RE Returns True if file is TV Show based on S01E01 regex
+        TV_RE2 Returns True if file is TV Show based on ##x## regex
         """
         if TV_RE.search(filename):
             return True
@@ -335,8 +333,8 @@ class torrentHandler:
         # If file is not recognized by any of the categories/checks - there would be no entry at the
         # config file
         except KeyError:
-            self.logger.debug("%s is not in any relevant category, ignoring" % self.torrentDirectory)
-            return None
+            self.logger.debug("%s is not in any relevant category, ignoring" % filename)
+            return (None, None)
 
 
 def main():
