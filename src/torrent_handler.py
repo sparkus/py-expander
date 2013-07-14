@@ -25,6 +25,7 @@ SOFTWARE_EXTENSIONS = ['.iso', '.exe']
 ARCHIVE_EXTENSIONS = ['.rar', '.zip', '.7z']
 
 TV_RE = re.compile("S\d{2}E\d{2}", re.IGNORECASE)
+TV_RE2 = re.compile("\d{2}x\d{2}", re.IGNORECASE)
 
 class torrentHandler:
     def __init__(self, torrentDirectory, torrentName, testMode=False):
@@ -177,6 +178,7 @@ class torrentHandler:
         :param torrent_name:
         """
         if self.singleFileTorrent:
+            self.logger.debug("_handle_directory: Single File Torrent, no directory handling")
             category_path, file_category = self.get_categorized_path(self.singleFileTorrentLocation)
             if category_path is not None:
                 self.logger.info("Found %s file %s" % (file_category, self.singleFileTorrentLocation))
@@ -201,6 +203,7 @@ class torrentHandler:
                 self.logger.debug("Handle Directory got Path: " + str(directory_path) + " Subdirectories: " + str(subdirectories) + " Filenames: " + str(filenames))
                 if len(filenames) > 0:
                     for filename in filenames:
+                        self.logger.debug("_handle_directory: trying to get category for: " + filename)
                         category_path, file_category = self.get_categorized_path(filename)
 
                         if category_path is not None:
@@ -280,6 +283,8 @@ class torrentHandler:
         """
         if TV_RE.search(filename):
             return True
+        elif TV_RE2.search(filename):
+            return True
         return False
 
 
@@ -343,7 +348,7 @@ def main():
     logger = logging.getLogger("torHandler")
     logger.setLevel(logging.DEBUG)
     logFileName= os.path.realpath(os.path.join(os.path.dirname(__file__),"logPyExpander.log"))
-    handler = logging.handlers.RotatingFileHandler(logFileName, mode='a', maxBytes=20000, backupCount=3)
+    handler = logging.handlers.RotatingFileHandler(logFileName, mode='a', maxBytes=200000, backupCount=2)
     handler.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     handler.setFormatter(formatter)
