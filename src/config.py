@@ -13,6 +13,7 @@ CATEGORY_PATH = {'tv': '/home/sparkus/download/tv',
                  'music': '/home/sparkus/download/music'}
 
 EXTRACTION_TEMP_DIR_NAME = '_extracted'
+EXTRACTED_FILES_LIST = '/home/sparkus/download/tobeDownloaded'
 
 
 def _find_executable(filename):

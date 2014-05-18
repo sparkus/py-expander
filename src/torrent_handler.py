@@ -131,7 +131,7 @@ class torrentHandler:
         recursively extracts all archives in folder.
         recursive extraction is iterative and is saved under
 
-        /foler/config.EXTRACTION_TEMP_DIR_NAME/unpacked_%iteration number
+        /folder/config.EXTRACTION_TEMP_DIR_NAME/unpacked_%iteration number
 
         :param folder:
         """
@@ -183,8 +183,10 @@ class torrentHandler:
             if category_path is not None:
                 self.logger.info("Found %s file %s" % (file_category, self.singleFileTorrentLocation))
                 destination_dir = os.path.join(category_path, torrent_name)
+                destination_dir = re.sub(r'[^\w]', '', destination_dir)
                 self._create_extraction_path(destination_dir)
                 destination_path = os.path.join(destination_dir, torrent_name)
+                destination_path = re.sub(r'[^\w]', '', destination_path)
                 try:
                     # Move\Copy all relevant files to their location (keep original files for uploading)
                     if self.testMode == False:
@@ -210,8 +212,10 @@ class torrentHandler:
                             self.logger.info("Found %s file %s" % (file_category, original_path))
 
                             destination_dir = os.path.join(category_path, torrent_name)
+                            destination_dir = re.sub(r'[^\w]', '', destination_dir)
                             self._create_extraction_path(destination_dir)  # Creates target directory (of category path)
                             destination_path = os.path.join(destination_dir, filename)
+                            destination_path = re.sub(r'[^\w]', '', destination_path)
 
                             try:
                                 # Move\Copy all relevant files to their location (keep original files for uploading)
@@ -249,7 +253,7 @@ class torrentHandler:
             self.logger.debug("File only in _choose_handler, selected copy")
             self._handle_directory(self.torrentDirectory, shutil.copy, self.torrentName)
 
-
+    
     def _cleanup_temp(self):
         """
         This function searches for the subdirectory created for extraction and deletes it.
