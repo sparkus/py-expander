@@ -183,10 +183,10 @@ class torrentHandler:
             if category_path is not None:
                 self.logger.info("Found %s file %s" % (file_category, self.singleFileTorrentLocation))
                 destination_dir = os.path.join(category_path, torrent_name)
-                destination_dir = re.sub(r'[^a-zA-Z0-9_/]', '', destination_dir)
+                destination_dir = re.sub(r'[^a-zA-Z0-9_/.]', '', destination_dir)
                 self._create_extraction_path(destination_dir)
                 destination_path = os.path.join(destination_dir, torrent_name)
-                destination_path = re.sub(r'[^a-zA-Z0-9_/]', '', destination_path)
+                destination_path = re.sub(r'[^a-zA-Z0-9_/.]', '', destination_path)
                 try:
                     # Move\Copy all relevant files to their location (keep original files for uploading)
                     if self.testMode == False:
@@ -212,10 +212,10 @@ class torrentHandler:
                             self.logger.info("Found %s file %s" % (file_category, original_path))
 
                             destination_dir = os.path.join(category_path, torrent_name)
-                            destination_dir = re.sub(r'[^a-zA-Z0-9_/]', '', destination_dir)
+                            destination_dir = re.sub(r'[^a-zA-Z0-9_/.]', '', destination_dir)
                             self._create_extraction_path(destination_dir)  # Creates target directory (of category path)
                             destination_path = os.path.join(destination_dir, filename)
-                            destination_path = re.sub(r'[^a-zA-Z0-9_/]', '', destination_path)
+                            destination_path = re.sub(r'[^a-zA-Z0-9_/.]', '', destination_path)
 
                             try:
                                 # Move\Copy all relevant files to their location (keep original files for uploading)
