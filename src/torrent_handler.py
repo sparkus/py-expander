@@ -42,7 +42,7 @@ class torrentHandler:
             self.logger.debug("Single File Torrent Detected in path: " + str(self.torrentDirectory))
         self.torrentName = torrentName
         self.logger = logging.getLogger("torHandler")
-        self.extract_all()
+        if not self.singleFileTorrent: self.extract_all()
         self._choose_handler()
         self._cleanup_temp()
     def _find_target_archives(self,directory):
